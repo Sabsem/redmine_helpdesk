@@ -40,8 +40,10 @@ class HelpdeskMailer < ActionMailer::Base
     # available then use this one instead of the regular
     r = CustomField.find_by_name('helpdesk-first-reply')
     f = CustomField.find_by_name('helpdesk-email-footer')
+    h = CustomField.find_by_name('helpdesk-send-html-emails')
     reply  = p.nil? || r.nil? ? '' : p.custom_value_for(r).try(:value)
     footer = p.nil? || f.nil? ? '' : p.custom_value_for(f).try(:value)
+	send_html_emails = p.nil? || h.nil? || p.custom_value_for(h).nil? ? false : p.custom_value_for(h).true?
     # add carbon copy
     ct = CustomField.find_by_name('copy-to')
     if carbon_copy.nil?
@@ -71,21 +73,19 @@ class HelpdeskMailer < ActionMailer::Base
       # sending out the journal note to the support client
       # or the first reply message
       t = text.present? ? "#{text}\n\n#{footer}" : reply
-      body = expand_macros(t, issue, journal)
-
+	  @body = expand_macros(t, issue, journal)
       # precess reply-separator
       f = CustomField.find_by_name('helpdesk-reply-separator')
       reply_separator = issue.project.custom_value_for(f).try(:value)
       if !reply_separator.blank?
         body = reply_separator + "\n\n" + body
       end
-
       mail(
         :from     => sender.present? && sender || Setting.mail_from,
         :reply_to => sender.present? && sender || Setting.mail_from,
         :to       => recipient,
         :subject  => subject,
-        :body     => body,
+        :body     => send_html_emails ? nil : @body,
         :date     => Time.zone.now,
         :cc       => carbon_copy
       )
@@ -140,6 +140,10 @@ class HelpdeskMailer < ActionMailer::Base
   # related to this object
   def self.references_for(object)
     token_for(object, false)
+  end
+  # Appends a Redmine header field (name is prepended with 'X-Redmine-')
+  def redmine_headers(h)
+    h.each { |k,v| headers["X-Redmine-#{k}"] = v.to_s }
   end
 
   def message_id(object)

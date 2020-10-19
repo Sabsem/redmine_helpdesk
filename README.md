@@ -157,6 +157,7 @@ rake helpdesk:localdb:stop
 * [Niremizov](https://github.com/Niremizov) - Set owner email only if it wasn't set before
 * [ghost](https://github.com/ghost) - Fix attachements truncated in email sent to supportclient
 * [Orchitech Solutions](https://github.com/orchitech) - Added support for reply separator (sponsored by ISIC Global Office)
+* [Orchitech Solutions](https://github.com/orchitech) - Added support for sending HTML emails (sponsored by ISIC Global Office)
 
 ## License
 
