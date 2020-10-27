@@ -158,6 +158,7 @@ rake helpdesk:localdb:stop
 * [ghost](https://github.com/ghost) - Fix attachements truncated in email sent to supportclient
 * [Orchitech Solutions](https://github.com/orchitech) - Added support for reply separator (sponsored by ISIC Global Office)
 * [Orchitech Solutions](https://github.com/orchitech) - Added support for sending HTML emails (sponsored by ISIC Global Office)
+* [Sabsem] (https://github.com/Sabsem) - Added support for sending from mail delivery setting (sponsored by elpribor)
 
 ## License
 

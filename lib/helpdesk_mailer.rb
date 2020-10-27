@@ -41,9 +41,11 @@ class HelpdeskMailer < ActionMailer::Base
     r = CustomField.find_by_name('helpdesk-first-reply')
     f = CustomField.find_by_name('helpdesk-email-footer')
     h = CustomField.find_by_name('helpdesk-send-html-emails')
+	d = CustomField.find_by_name('helpdesk-send-from-mail-delivery')
     reply  = p.nil? || r.nil? ? '' : p.custom_value_for(r).try(:value)
     footer = p.nil? || f.nil? ? '' : p.custom_value_for(f).try(:value)
 	send_html_emails = p.nil? || h.nil? || p.custom_value_for(h).nil? ? false : p.custom_value_for(h).true?
+	mail_delivery = p.nil? || d.nil? || p.custom_value_for(d).nil? ? false : p.custom_value_for(d).true?
     # add carbon copy
     ct = CustomField.find_by_name('copy-to')
     if carbon_copy.nil?
@@ -81,7 +83,7 @@ class HelpdeskMailer < ActionMailer::Base
         body = reply_separator + "\n\n" + body
       end
       mail(
-        :from     => sender.present? && sender || Setting.mail_from,
+        :from     => mail_delivery? Setting.mail_from :(sender.present? && sender || Setting.mail_from),
         :reply_to => sender.present? && sender || Setting.mail_from,
         :to       => recipient,
         :subject  => subject,
@@ -95,7 +97,7 @@ class HelpdeskMailer < ActionMailer::Base
       @journal = journal
       @issue_url = url_for(:controller => 'issues', :action => 'show', :id => issue)
       mail(
-        :from     => sender.present? && sender || Setting.mail_from,
+        :from     => mail_delivery? Setting.mail_from :(sender.present? && sender || Setting.mail_from),
         :reply_to => sender.present? && sender || Setting.mail_from,
         :to       => recipient,
         :subject  => subject,
