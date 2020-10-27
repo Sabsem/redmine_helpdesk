@@ -41,9 +41,11 @@ class HelpdeskMailer < ActionMailer::Base
     r = CustomField.find_by_name('helpdesk-first-reply')
     f = CustomField.find_by_name('helpdesk-email-footer')
     h = CustomField.find_by_name('helpdesk-send-html-emails')
+	d = CustomField.find_by_name('helpdesk-send-from-mail-delivery')
     reply  = p.nil? || r.nil? ? '' : p.custom_value_for(r).try(:value)
     footer = p.nil? || f.nil? ? '' : p.custom_value_for(f).try(:value)
 	send_html_emails = p.nil? || h.nil? || p.custom_value_for(h).nil? ? false : p.custom_value_for(h).true?
+	mail_delivery = p.nil? || d.nil? || p.custom_value_for(d).nil? ? false : p.custom_value_for(d).true?
     # add carbon copy
     ct = CustomField.find_by_name('copy-to')
     if carbon_copy.nil?
@@ -73,15 +75,15 @@ class HelpdeskMailer < ActionMailer::Base
       # sending out the journal note to the support client
       # or the first reply message
       t = text.present? ? "#{text}\n\n#{footer}" : reply
-	  @body = expand_macros(t, issue, journal)
+      @body = expand_macros(t, issue, journal)
       # precess reply-separator
       f = CustomField.find_by_name('helpdesk-reply-separator')
       reply_separator = issue.project.custom_value_for(f).try(:value)
       if !reply_separator.blank?
-        body = reply_separator + "\n\n" + body
+        @body = reply_separator + "\n\n" + @body
       end
       mail(
-        :from     => sender.present? && sender || Setting.mail_from,
+        :from     => mail_delivery==false ? Setting.mail_from : sender ,
         :reply_to => sender.present? && sender || Setting.mail_from,
         :to       => recipient,
         :subject  => subject,
@@ -95,7 +97,7 @@ class HelpdeskMailer < ActionMailer::Base
       @journal = journal
       @issue_url = url_for(:controller => 'issues', :action => 'show', :id => issue)
       mail(
-        :from     => sender.present? && sender || Setting.mail_from,
+        :from     => mail_delivery==false ? Setting.mail_from : sender ,
         :reply_to => sender.present? && sender || Setting.mail_from,
         :to       => recipient,
         :subject  => subject,
