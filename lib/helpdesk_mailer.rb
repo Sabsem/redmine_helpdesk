@@ -75,15 +75,15 @@ class HelpdeskMailer < ActionMailer::Base
       # sending out the journal note to the support client
       # or the first reply message
       t = text.present? ? "#{text}\n\n#{footer}" : reply
-	  @body = expand_macros(t, issue, journal)
+      @body = expand_macros(t, issue, journal)
       # precess reply-separator
       f = CustomField.find_by_name('helpdesk-reply-separator')
       reply_separator = issue.project.custom_value_for(f).try(:value)
       if !reply_separator.blank?
-        body = reply_separator + "\n\n" + body
+        @body = reply_separator + "\n\n" + @body
       end
       mail(
-        :from     => mail_delivery? Setting.mail_from :(sender.present? && sender || Setting.mail_from),
+        :from     => mail_delivery==false ? Setting.mail_from : sender ,
         :reply_to => sender.present? && sender || Setting.mail_from,
         :to       => recipient,
         :subject  => subject,
@@ -97,7 +97,7 @@ class HelpdeskMailer < ActionMailer::Base
       @journal = journal
       @issue_url = url_for(:controller => 'issues', :action => 'show', :id => issue)
       mail(
-        :from     => mail_delivery? Setting.mail_from :(sender.present? && sender || Setting.mail_from),
+        :from     => mail_delivery==false ? Setting.mail_from : sender ,
         :reply_to => sender.present? && sender || Setting.mail_from,
         :to       => recipient,
         :subject  => subject,
